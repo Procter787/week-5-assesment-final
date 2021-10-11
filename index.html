@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Back End Assessment</title>
+  </head>
+  <!-- <body class="container"> -->
+    <button id="complimentButton">Get a compliment</button>
+    <!-- <button id="fortuneButton">Get a fortune!</button> -->
+
+    <section>
+      <button id='getItems'>Get items</button>
+      <input id='newItem' placeholder='add an item' />
+      <button id='addItem'>Add Item</button>
+      <section id='itemsDisplay'></section>
+    </section>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+      document.getElementById("complimentButton").onclick = function () {
+        axios.get("http://localhost:4000/api/compliment/")
+            .then(function (response) {
+              const data = response.data;
+              alert(data);
+            });
+      };
+
+      document.querySelector('#fortuneButton').addEventListener('click', () => {
+        axios
+          .get('http://localhost:4000/api/fortune')
+          .then(res => {
+            alert(res.data)
+          })
+          .catch(err => console.log(err))
+      })
+
+      // ITEMS FUNCTIONALITY
+      function displayItems(itemsArr) {
+        const itemsSection = document.querySelector('#itemsDisplay')
+
+        itemsSection.innerHTML = '';
+
+        for (let i = 0; i < itemsArr.length; i++) {
+          const p = document.createElement('p');
+          const itemText = document.createTextNode(itemsArr[i].name);
+
+          p.appendChild(itemText);
+          // p.setAttribute('id', itemsArr[i].id)
+
+          p.addEventListener('click', () => {
+            axios
+              .delete(`http://localhost:4000/api/items/${itemsArr[i].id}`)
+              .then(res => displayItems(res.data))
+              .catch(err => console.log(err))
+          })
+
+          itemsSection.appendChild(p);
+        }
+      }
+
+      document.querySelector('#getItems').addEventListener('click', () => {
+        axios
+          .get('http://localhost:4000/api/items')
+          .then(res => displayItems(res.data))
+          .catch(err => console.log(err))
+      })
+
+      document.querySelector('#addItem').addEventListener('click', () => {
+        const itemInput = document.querySelector('#newItem');
+
+        // handle edge case of user submitting empty value
+        if (!itemInput.value.trim()) {
+          alert('Cannot send empty item!');
+          return;
+        }
+
+        const payload = {
+          item: itemInput.value
+        }
+
+        axios
+          .post('http://localhost:4000/api/items', payload)
+          .then(() => {
+            alert('Item added!');
+
+            itemInput.value = '';
+            itemInput.focus();
+          })
+          .catch(err => console.log(err))
+
+        
+      })
+      
+    </script>
+  </body>
+</html>
